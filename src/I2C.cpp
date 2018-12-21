@@ -2,7 +2,7 @@
  * Title: A I2C library using the hardware TWI interface of a Atmega32u4
  * Created: 03.11.2014 13:20:06
  * Author: Benjamin Frank
- */ 
+ */
 #include <util/twi.h>
 #include "I2C.h"
 
@@ -20,8 +20,8 @@ I2C::I2C() {
 void I2C::begin() {
 	PORTD &= ~(1 << 0); //Port D0 SCL
 	PORTD &= ~(1 << 1); //Port D1 SDA
-	setClock(TWI_FREQ); //TWBR = ((( F_CPU / TWI_FREQ ) - 16) / 2); 
-	TWSR = 0; 
+	setClock(TWI_FREQ); //TWBR = ((( F_CPU / TWI_FREQ ) - 16) / 2);
+	TWSR = 0;
 	TWCR = ( 1 << TWEN ); // enable the i2c bus f
 }
 
@@ -56,7 +56,7 @@ void I2C::start(bool preventFreezing) {
 	uint8_t twstatus;
 	// send START condition
 	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);
-	
+
 	// wait until transmission completed
 	if (preventFreezing == true) {
 		this->safeCounter = 0;
@@ -72,7 +72,7 @@ void I2C::start(bool preventFreezing) {
 	} else {
 		while (!(TWCR & (1<<TWINT)));
 	}
-	
+
 	twstatus = TW_STATUS & 0xF8;
 
 	if ((twstatus != TW_START) && (twstatus != TW_REP_START)){
@@ -85,7 +85,7 @@ void I2C::start(bool preventFreezing) {
 }
 
 /*
- * 
+ *
  * address: address of the hardware
  * w: read or write flag
  */
@@ -98,7 +98,7 @@ void I2C::sendAddress(uint8_t address, uint8_t w, bool preventFreezing) {
 	uint8_t   twstatus;
 	TWDR = (address<<1) | w ;
 	TWCR = (1 << TWINT) | (1<<TWEN);
-	
+
 	if (preventFreezing == true) {
 		this->safeCounter = 0;
 
@@ -113,9 +113,9 @@ void I2C::sendAddress(uint8_t address, uint8_t w, bool preventFreezing) {
 	} else {
 		while (!(TWCR & (1 << TWINT)));
 	}
-	
+
 	twstatus = TW_STATUS & 0xF8;
-	
+
 	if ( (twstatus != TW_MT_SLA_ACK) && (twstatus != TW_MR_SLA_ACK) ) {
 		#ifdef DEBUG_I2C_ERRORS
 			Serial.print("\n   |Error: ADRESS -> [");
@@ -167,7 +167,7 @@ size_t I2C::send(uint8_t data, bool preventFreezing) {
 	// send data to the previously addressed device
 	TWDR = data;
 	TWCR = (1 << TWINT) | (1<<TWEN);
-	
+
 	// wait until transmission completed
 	if (preventFreezing == true) {
 		#ifdef DEBUG_I2C_FREEZING
