@@ -168,9 +168,19 @@ uint8_t I2CTransport::readBytes(
 	uint8_t length,
 	uint8_t *dest
 ) {
+
 	if (me().I2C_Client) {
-		// @TODO - implement this feature
-		return 0;
+		uint8_t i = 0;
+		me().I2C_Client->connect(deviceAddress, I2C_WRITE);
+		me().I2C_Client->send(registerAddress);
+		me().I2C_Client->stop();
+		me().I2C_Client->connect(deviceAddress, I2C_READ);
+		for (i; i < length - 1; i++) {
+			dest[i] = me().I2C_Client->readAck();
+		}
+		dest[i] = me().I2C_Client->read();
+		me().I2C_Client->stop();
+		return i;
 	} else {
 		// Initialize the Tx buffer
 		me().TwoWire_Client->beginTransmission(deviceAddress);
